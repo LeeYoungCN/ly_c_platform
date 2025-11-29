@@ -1,2 +1,2 @@
-# ly_c_platform
-C platform
+# ly_chat_backend
+LyChat Backend
