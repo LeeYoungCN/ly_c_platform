@@ -1,0 +1,102 @@
+# This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
+# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
+name: CMake on multiple CMakePresets.json
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
+      fail-fast: false
+
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-15]
+        platform: [gnu, clang, msvc]
+        include:
+          # Windows 配置
+          - os: windows-latest
+            platform: msvc
+            preset: win_clang_msvc_release
+            compiler: msvc
+          - os: windows-latest
+            platform: gnu
+            preset: win_mingw_release
+            compiler: mingw
+          # Ubuntu 配置
+          - os: ubuntu-latest
+            platform: clang
+            preset: linux_clang_release
+            compiler: clang
+          - os: ubuntu-latest
+            platform: gnu
+            preset: linux_gnu_release
+            compiler: gcc
+          # macOS 配置
+          - os: macos-15
+            platform: clang
+            preset: darwin_clang_release
+            compiler: clang
+        exclude:
+          - os: windows-latest
+            platform: clang
+          - os: ubuntu-latest
+            platform: msvc
+          - os: macos-15
+            platform: msvc
+          - os: macos-15
+            platform: gnu
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set reusable strings
+      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/out/build" >> "$GITHUB_OUTPUT"
+        echo "build-install-dir=${{ github.workspace }}/out/install" >> "$GITHUB_OUTPUT"
+
+    - name: Update MinGW via MSYS2 (Windows GCC only)
+      if: matrix.os == 'windows-latest' && matrix.compiler == 'mingw'
+      run: |
+        # 1. 启动 MSYS2 终端并更新包数据库（仅更新必要的索引）
+        C:\msys64\usr\bin\bash -lc "pacman -Sy --noconfirm"
+        
+        # 2. 升级 MinGW 64位 GCC 工具链（包含 g++、标准库等）
+        C:\msys64\usr\bin\bash -lc "pacman -S --noconfirm mingw-w64-x86_64-gcc"
+        
+        # 3. （可选）升级配套工具（如 make、gdb，按需添加）
+        C:\msys64\usr\bin\bash -lc "pacman -S --noconfirm mingw-w64-x86_64-make mingw-w64-x86_64-gdb"
+        
+        # 4. 将 MinGW 路径添加到环境变量（确保优先使用）
+        echo "C:\msys64\mingw64\bin" >> $env:GITHUB_PATH
+
+    - name: Configure CMake
+      working-directory: ${{ github.workspace }}
+      run: cmake --preset=${{ matrix.preset }}
+
+    - name: Build And Install
+      working-directory: ${{ github.workspace }}
+      run: cmake --build --preset=${{ matrix.preset }}_build
+
+    - name: Test
+      working-directory: ${{ github.workspace }}
+      run: ctest --preset=${{ matrix.preset }}_ctest
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4  # 升级到v4版本
+      with:
+        name: ${{ matrix.preset }}-build
+        path: ${{ steps.strings.outputs.build-install-dir }}
+        # v4版本新增的可选配置（根据需要添加）
+        if-no-files-found: warn  # 无文件时警告而非失败
+        retention-days: 7  #  artifacts保留7天
+
