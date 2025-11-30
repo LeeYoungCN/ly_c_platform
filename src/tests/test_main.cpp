@@ -1,9 +1,11 @@
 #include <cstdio>
 
+#include "gtest/gtest.h"
+
 int main(int argc, char *argv[])
 {
-    for (int i = 0; i < argc; i++) {
-        printf("argv[%d]: %s\n", i, argv[i]);
-    }
-    return 0;
+    printf("Running main() from: %s.\n", __FILE__);
+    printf("Build time: %s.\n", __TIME__);
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
