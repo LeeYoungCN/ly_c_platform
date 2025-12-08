@@ -1,6 +1,8 @@
 #include <cstdint>
 #include <cstdio>
 
+#include "common/types/error_code.h"
+#include "cstl/cstl_error_code.h"
 #include "cstl/cstl_string.h"
 #include "gtest/gtest.h"
 
@@ -36,6 +38,7 @@ TEST_F(Test_StlString, OnlyFormat)
     ASSERT_NE(CStlString_CStr(m_string), nullptr);
     EXPECT_STREQ(CStlString_CStr(m_string), testStr);
     EXPECT_EQ(CStlString_Length(m_string), strlen(testStr));
+    EXPECT_EQ(CStlString_GetLastError(m_string), ERR_COMM_SUCCESS);
 }
 
 TEST_F(Test_StlString, FormatAndParams)
@@ -48,6 +51,7 @@ TEST_F(Test_StlString, FormatAndParams)
     ASSERT_NE(CStlString_CStr(m_string), nullptr);
     EXPECT_STREQ(CStlString_CStr(m_string), expectBuffer);
     EXPECT_EQ(CStlString_Length(m_string), strlen(expectBuffer));
+    EXPECT_EQ(CStlString_GetLastError(m_string), ERR_COMM_SUCCESS);
 }
 
 TEST_F(Test_StlString, FormatNULL)
@@ -57,6 +61,7 @@ TEST_F(Test_StlString, FormatNULL)
     ASSERT_NE(CStlString_CStr(m_string), nullptr);
     EXPECT_STREQ(CStlString_CStr(m_string), "");
     EXPECT_EQ(CStlString_Length(m_string), 0);
+    EXPECT_EQ(CStlString_GetLastError(m_string), ERR_COMM_SUCCESS);
 }
 
 TEST_F(Test_StlString, EmptyFormat)
@@ -65,6 +70,7 @@ TEST_F(Test_StlString, EmptyFormat)
     EXPECT_NE(m_string, nullptr);
     EXPECT_STREQ(CStlString_CStr(m_string), "");
     EXPECT_EQ(CStlString_Length(m_string), 0);
+    EXPECT_EQ(CStlString_GetLastError(m_string), ERR_COMM_SUCCESS);
 }
 
 TEST_F(Test_StlString, StringCopy)
@@ -77,12 +83,15 @@ TEST_F(Test_StlString, StringCopy)
     ASSERT_NE(CStlString_CStr(m_string), nullptr);
     EXPECT_STREQ(CStlString_CStr(m_string), expectBuffer);
     EXPECT_EQ(CStlString_Length(m_string), strlen(expectBuffer));
+    EXPECT_EQ(CStlString_GetLastError(m_string), ERR_COMM_SUCCESS);
+
     auto newStr = CStlString_Copy(m_string);
     ASSERT_NE(newStr, nullptr);
     ASSERT_NE(CStlString_CStr(newStr), nullptr);
 
     EXPECT_STREQ(CStlString_CStr(m_string), CStlString_CStr(newStr));
     EXPECT_EQ(CStlString_Length(m_string), CStlString_Length(m_string));
+    EXPECT_EQ(CStlString_GetLastError(newStr), ERR_COMM_SUCCESS);
     CStlString_Delete(newStr);
 }
 
@@ -95,8 +104,30 @@ TEST_F(Test_StlString, LongString)
     for (uint32_t i = 0; i < testLen; i++) {
         CStlString_Append(m_string, "%u", 0);
         EXPECT_EQ(CStlString_Length(m_string), i + 1);
+        EXPECT_EQ(CStlString_GetLastError(m_string), ERR_COMM_SUCCESS);
     }
 }
 
+TEST_F(Test_StlString, NewWithSize)
+{
+    m_string = CStlString_NewBySize(1024, nullptr);
+    EXPECT_EQ(CStlString_Length(m_string), 0);
+    EXPECT_EQ(CStlString_Capacity(m_string), 1024);
+    EXPECT_EQ(CStlString_GetLastError(m_string), ERR_COMM_SUCCESS);
+}
+
 TEST_F(Test_StlString, Resize)
-{}
+{
+    m_string = CStlString_NewBySize(1024, nullptr);
+    EXPECT_EQ(CStlString_Length(m_string), 0);
+    EXPECT_EQ(CStlString_Capacity(m_string), 1024);
+    EXPECT_EQ(CStlString_GetLastError(m_string), ERR_COMM_SUCCESS);
+    for (uint32_t i = CStlString_Length(m_string) + 1; i <= CSTL_STRING_MAX_CAPACITY; i++) {
+        CStlString_Resize(m_string, i);
+        EXPECT_EQ(CStlString_GetLastError(m_string), ERR_COMM_SUCCESS);
+        EXPECT_EQ(CStlString_Capacity(m_string), i);
+    }
+
+    CStlString_Resize(m_string, CSTL_STRING_MAX_CAPACITY + 1);
+    EXPECT_EQ(CStlString_GetLastError(m_string), ERR_CSTL_OUT_OF_RANGE);
+}

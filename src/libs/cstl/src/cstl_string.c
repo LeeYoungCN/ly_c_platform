@@ -11,7 +11,6 @@
 
 #define CSTL_STRING_DEFAULT_SIZE (128)
 #define CSTL_STRING_INCREASE_SIZE (128)
-#define CSTL_STRING_MAX_CAPACITY (4096)
 
 struct CStlString {
     ErrorCode lastErrCode;
@@ -79,6 +78,7 @@ CStlString *CStlString_NewBySize(uint32_t size, const char *format, ...)
 {
     va_list args;
     va_start(args, format);
+    size = (size == 0 ? CSTL_STRING_DEFAULT_SIZE : size);
     CStlString *string = CStlString_NewBySizeVa(size, format, args);
     va_end(args);
     return string;
@@ -145,6 +145,7 @@ CStlString *CStlString_Copy(const CStlString *srcStr)
     string->capacity = srcStr->capacity;
     string->cstr = malloc(string->capacity);
     strncpy(string->cstr, srcStr->cstr, string->capacity - 1);
+    string->lastErrCode = ERR_COMM_SUCCESS;
     return string;
 }
 
@@ -160,5 +161,13 @@ ErrorCode CStlString_Resize(CStlString *string, uint32_t newCapacity)
     free(string->cstr);
     string->cstr = newCstr;
     string->capacity = newCapacity;
+    return string->lastErrCode;
+}
+
+ErrorCode CStlString_GetLastError(const CStlString *string)
+{
+    if (string == NULL) {
+        return ERR_COMM_PARAM_NULL;
+    }
     return string->lastErrCode;
 }

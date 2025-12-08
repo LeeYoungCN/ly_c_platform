@@ -6,30 +6,35 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+
 #include "common/types/error_code.h"
+
+#define CSTL_STRING_MAX_CAPACITY (4096)
 
 typedef struct CStlString CStlString;
 
-CStlString *CStlString_New(const char* format, ...);
+CStlString *CStlString_New(const char *format, ...);
 
-CStlString *CStlString_NewBySize(uint32_t size, const char* format, ...);
+CStlString *CStlString_NewBySize(uint32_t size, const char *format, ...);
 
-ErrorCode CStlString_Append(CStlString *string, const char* format, ...);
+ErrorCode CStlString_Append(CStlString *string, const char *format, ...);
 
-const char* CStlString_CStr(const CStlString *string);
+const char *CStlString_CStr(const CStlString *string);
 
 uint32_t CStlString_Length(const CStlString *string);
 
 uint32_t CStlString_Capacity(const CStlString *string);
 
-void CStlString_Delete(CStlString* string);
+void CStlString_Delete(CStlString *string);
 
 CStlString *CStlString_Copy(const CStlString *srcStr);
 
 ErrorCode CStlString_Resize(CStlString *string, uint32_t newCapacity);
 
+ErrorCode CStlString_GetLastError(const CStlString *string);
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif // CSTL_STRING_H
+#endif  // CSTL_STRING_H

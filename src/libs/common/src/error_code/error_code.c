@@ -1,4 +1,5 @@
 #include "common/types/error_code.h"
+#include "common/types/common_types.h"
 
 #include <string.h>
 
@@ -9,9 +10,9 @@ ErrorSeverity ErrCode_GetSeverity(ErrorCode err)
     return (ErrorSeverity)((err & ERR_SEVERITY_MASK) >> ERR_SEVERITY_SHIFT);
 }
 
-ModuleID ErrCode_GetModuleId(ErrorCode err)
+ModuleId ErrCode_GetModuleId(ErrorCode err)
 {
-    return (ModuleID)((err & ERR_MODULE_MASK) >> ERR_MODULE_SHIFT);
+    return (ModuleId)((err & ERR_MODULE_MASK) >> ERR_MODULE_SHIFT);
 }
 
 ErrorType ErrCode_GetErrorType(ErrorCode err)
@@ -32,7 +33,15 @@ static const char *get_module_common_err_message(ErrorCode errCode)
         case ERR_COMM_MALLOC_FAILED:
             return "malloc failed";
         case ERR_COMM_ARRAY_OOB:
-            return "array out of bound.";
+            return "array out of bound";
+        case ERR_COMM_ENUM_INVALID:
+            return "Enum invalid";
+        case ERR_COMM_ARRAY_IDX_OOB:
+            return "Input index array out of bound";
+        case ERR_COMM_PARAM_NULL:
+            return "Input param NULL";
+        case ERR_COMM_PARAM_INVALID:
+            return "Input param invalid";
         default:
             return "Unkown";
     };
@@ -43,17 +52,17 @@ void ErrCode_RegisterModule(ModuleData data)
     g_currModuleDatas[data.moduleId] = data;
 }
 
-const char *ErrCode_GetErrorMessage(ErrorCode errorCode)
+const char *ErrCode_GetErrMsg(ErrorCode errorCode)
 {
-    ModuleID moduleId = ErrCode_GetModuleId(errorCode);
+    ModuleId moduleId = ErrCode_GetModuleId(errorCode);
 
     if (moduleId == COMMON_MODULE_ID) {
         return get_module_common_err_message(errorCode);
     }
 
-    if (g_currModuleDatas[moduleId].getMessageFunc == NULL) {
+    if (g_currModuleDatas[moduleId].getErrMsgFunc == NULL) {
         return "Module not register";
     }
 
-    return (*g_currModuleDatas[moduleId].getMessageFunc)(errorCode);
+    return (*g_currModuleDatas[moduleId].getErrMsgFunc)(errorCode);
 }
