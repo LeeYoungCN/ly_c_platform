@@ -151,7 +151,7 @@ CStlString *CStlString_Copy(const CStlString *srcStr)
     string->length = srcStr->length;
     string->capacity = srcStr->capacity;
     string->cstr = malloc(string->capacity);
-    strncpy_s(string->cstr, string->capacity, srcStr->cstr, srcStr->length + 1);
+    strncpy(string->cstr, srcStr->cstr, srcStr->length + 1);
     string->lastErrCode = ERR_COMM_SUCCESS;
     return string;
 }

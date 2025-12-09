@@ -1,6 +1,5 @@
 #include "cstl/cstl_vector.h"
 
-#include <corecrt_memcpy_s.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -66,7 +65,7 @@ ErrorCode CStlVector_GetElem(CStlVector *vector, uint32_t idx, void *elem)
     }
     vector->lastErrCode = ERR_COMM_SUCCESS;
     char *ptr = vector->elements + idx * vector->elemSize;
-    memcpy_s(elem, vector->elemSize, ptr, vector->elemSize);
+    memcpy(elem, ptr, vector->elemSize);
     return vector->lastErrCode;
 }
 
@@ -83,9 +82,9 @@ ErrorCode CStlVector_SetElem(CStlVector *vector, uint32_t idx, void *newElem, vo
 
     char *ptr = vector->elements + idx * vector->elemSize;
     if (oldElem != NULL) {
-        memcpy_s(oldElem, vector->elemSize, ptr, vector->elemSize);
+        memcpy(oldElem, ptr, vector->elemSize);
     }
-    memcpy_s(ptr, vector->elemSize, newElem, vector->elemSize);
+    memcpy(ptr, newElem, vector->elemSize);
     return vector->lastErrCode;
 }
 
@@ -169,7 +168,7 @@ ErrorCode CStlVector_Pop(CStlVector *vector, void *elem)
     void *ptr = vector->elements + (vector->length - 1) * vector->elemSize;
     vector->length--;
     if (elem != NULL) {
-        memcpy_s(elem, vector->elemSize, ptr, vector->elemSize);
+        memcpy(elem, ptr, vector->elemSize);
     }
     if (vector->capacity > CSTL_VECTOR_MIN_CAPACITY && vector->length <= vector->capacity / 4) {
         CStlVector_Resize(vector, COMM_MAX(CSTL_VECTOR_MIN_CAPACITY, vector->capacity / 2));
