@@ -16,7 +16,15 @@
 extern "C" {
 #endif
 
-typedef enum { LOG_DEBUG = 0, LOG_INFO, LOG_WARNING, LOG_ERROR, LOG_PANIC } LogLevel;
+typedef struct LoggingSinkBase LoggingSinkBase;
+
+typedef enum {
+    LOG_DEBUG = 0,
+    LOG_INFO,
+    LOG_WARNING,
+    LOG_ERROR,
+    LOG_FATAL
+} LogLevel;
 
 /**
  * @brief 日志打印接口
@@ -28,7 +36,13 @@ typedef enum { LOG_DEBUG = 0, LOG_INFO, LOG_WARNING, LOG_ERROR, LOG_PANIC } LogL
  * @param format 日志格式
  * @param ...
  */
-void logging_log(const char *file, int line, const char *func, LogLevel level, const char *format, ...);
+void Logging_Log(const char *file, int line, const char *func, LogLevel level, const char *format, ...);
+
+void Logging_Init(void);
+
+void Logging_Close(void);
+
+void Logging_RegisterSink(LoggingSinkBase *sink);
 
 #ifdef __cplusplus
 }  // 结束 extern "C" 块

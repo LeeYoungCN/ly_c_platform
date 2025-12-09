@@ -23,7 +23,7 @@ const char *GetLogLevelName(LogLevel level)
             return "WARN";
         case LOG_ERROR:
             return "ERR";
-        case LOG_PANIC:
+        case LOG_FATAL:
             return "PANIC";
         default:
             return "Unkown";

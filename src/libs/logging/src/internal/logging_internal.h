@@ -18,15 +18,20 @@
 extern "C" {
 #endif
 
+#define LOG_BUFFER_LEN (512)
+
 typedef struct {
     const char *file;
     int line;
     const char *func;
-} LogSource;
+    int timeStamp;
+    LogLevel level;
+    char buffer[LOG_BUFFER_LEN];
+} LogRecord;
 
 /**
  * @brief Get the Log Level Name object
- * 
+ *
  * @param level 日志级别
  * @return const char* 日志级别字符串
  */
