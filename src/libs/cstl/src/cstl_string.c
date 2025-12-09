@@ -163,11 +163,11 @@ ErrorCode CStlString_Resize(CStlString *string, uint32_t newCapacity)
     }
     string->lastErrCode = ERR_COMM_SUCCESS;
     if (newCapacity > CSTL_STRING_MAX_CAPACITY || newCapacity == 0) {
-        string->lastErrCode = ERR_CSTL_CAPACITY_INVALID;
+        string->lastErrCode = ERR_CSTL_PARAM_CAPACITY_INVALID;
         return string->lastErrCode;
     }
     if (string->length > newCapacity) {
-        string->lastErrCode = ERR_CSTL_CAPACITY_INVALID;
+        string->lastErrCode = ERR_CSTL_PARAM_CAPACITY_INVALID;
         return string->lastErrCode;
     }
 

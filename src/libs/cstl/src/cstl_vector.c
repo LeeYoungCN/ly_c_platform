@@ -1,62 +1,137 @@
 #include "cstl/cstl_vector.h"
+
+#include <corecrt_memcpy_s.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "common/common_macro.h"
 #include "common/types/error_code.h"
 #include "cstl/cstl_error_code.h"
 
-#define CSTL_VECTOR_DEFAULT_SIZE (32)
-#define CSTL_VECTOR_MAX_CAPACITY (4096)
+CStlVector *CStlVector_New(uint32_t elemSize)
+{
+    return CStlVector_NewByCapacity(elemSize, CSTL_VECTOR_MIN_CAPACITY);
+}
 
-struct CStlVector {
-    ErrorCode lastErrCode;
-    uint32_t length;
-    uint32_t capacity;
-    void **datas;
-};
+CStlVector *CStlVector_NewByCapacity(uint32_t elemSize, uint32_t capacity)
+{
+    capacity = COMM_MAX(CSTL_VECTOR_MIN_CAPACITY, capacity);
+    CStlVector *vector = malloc(sizeof(CStlVector));
+    CStlVector_InitByCapacity(vector, elemSize, capacity);
+    return vector;
+}
+
+void CStlVector_Delete(CStlVector *vector)
+{
+    if (vector == NULL) {
+        return;
+    }
+    CStlVector_DeInit(vector);
+    free(vector);
+}
+
+void CStlVector_Init(CStlVector *vector, uint32_t elemSize)
+{
+    CStlVector_InitByCapacity(vector, elemSize, CSTL_VECTOR_MIN_CAPACITY);
+}
+
+void CStlVector_InitByCapacity(CStlVector *vector, uint32_t elemSize, uint32_t capacity)
+{
+    capacity = COMM_MAX(CSTL_VECTOR_MIN_CAPACITY, capacity);
+    vector->length = 0;
+    vector->capacity = capacity;
+    vector->elemSize = elemSize;
+    vector->elements = malloc(elemSize * vector->capacity);
+    memset(vector->elements, 0, elemSize * vector->capacity);
+}
+
+void CStlVector_DeInit(CStlVector *vector)
+{
+    if (vector == NULL || vector->elements == NULL) {
+        return;
+    }
+    free(vector->elements);
+    vector->elements = NULL;
+}
+
+ErrorCode CStlVector_GetElem(CStlVector *vector, uint32_t idx, void *elem)
+{
+    if (vector == NULL || vector->elements == NULL || elem == NULL) {
+        return ERR_COMM_PARAM_NULL;
+    }
+    if (idx >= vector->length) {
+        vector->lastErrCode = ERR_CSTL_PARAM_IDX_INVALID;
+        return vector->lastErrCode;
+    }
+    vector->lastErrCode = ERR_COMM_SUCCESS;
+    char *ptr = vector->elements + idx * vector->elemSize;
+    memcpy_s(elem, vector->elemSize, ptr, vector->elemSize);
+    return vector->lastErrCode;
+}
+
+ErrorCode CStlVector_SetElem(CStlVector *vector, uint32_t idx, void *newElem, void *oldElem)
+{
+    if (vector == NULL || vector->elements == NULL || newElem == NULL) {
+        return ERR_COMM_PARAM_NULL;
+    }
+    if (idx >= vector->length) {
+        vector->lastErrCode = ERR_CSTL_PARAM_IDX_INVALID;
+        return ERR_CSTL_PARAM_IDX_INVALID;
+    }
+    vector->lastErrCode = ERR_COMM_SUCCESS;
+
+    char *ptr = vector->elements + idx * vector->elemSize;
+    if (oldElem != NULL) {
+        memcpy_s(oldElem, vector->elemSize, ptr, vector->elemSize);
+    }
+    memcpy_s(ptr, vector->elemSize, newElem, vector->elemSize);
+    return vector->lastErrCode;
+}
+
+uint32_t CStlVector_Length(const CStlVector *vector)
+{
+    return vector == NULL || vector->elements == NULL ? 0 : vector->length;
+}
+
+uint32_t CStlVector_Capacity(const CStlVector *vector)
+{
+    return vector == NULL || vector->elements == NULL ? 0 : vector->capacity;
+}
 
 ErrorCode CStlVector_Resize(CStlVector *vector, uint32_t newCapacity)
 {
-    if (vector == NULL) {
+    if (vector == NULL || vector->elements == NULL) {
         return ERR_COMM_PARAM_NULL;
     }
+
     vector->lastErrCode = ERR_COMM_SUCCESS;
+
     if (newCapacity > CSTL_VECTOR_MAX_CAPACITY) {
         vector->lastErrCode = ERR_CSTL_EXCEED_MAX_CAPACITY;
         return vector->lastErrCode;
     }
-    if (vector->length > newCapacity || newCapacity == 0) {
-        vector->lastErrCode = ERR_CSTL_CAPACITY_INVALID;
+
+    if (vector->length > newCapacity || newCapacity < CSTL_VECTOR_MIN_CAPACITY) {
+        vector->lastErrCode = ERR_CSTL_PARAM_CAPACITY_INVALID;
         return vector->lastErrCode;
     }
-    void **newDatas = realloc(vector->datas, sizeof(void *) * newCapacity);
+
+    char *newDatas = realloc(vector->elements, vector->elemSize * newCapacity);
+
     if (newDatas == NULL) {
         vector->lastErrCode = ERR_COMM_MALLOC_FAILED;
     } else {
-        vector->datas = newDatas;
+        vector->elements = newDatas;
         vector->lastErrCode = ERR_COMM_SUCCESS;
+        vector->capacity = newCapacity;
     }
     return vector->lastErrCode;
 }
 
-CStlVector *CStlVector_NewBySize(uint32_t size)
+ErrorCode CStlVector_Push(CStlVector *vector, void *elem)
 {
-    CStlVector *vector = malloc(sizeof(CStlVector));
-    vector->length = 0;
-    vector->capacity = size;
-    vector->datas = malloc(sizeof(void *) * vector->capacity);
-    return vector;
-}
-
-CStlVector *CStlVector_New(void)
-{
-    return CStlVector_NewBySize(CSTL_VECTOR_DEFAULT_SIZE);
-}
-
-ErrorCode CStlVector_Push(CStlVector *vector, void *data)
-{
-    if (vector == NULL) {
+    if (vector == NULL || vector->elements == NULL) {
         return ERR_COMM_PARAM_NULL;
     }
 
@@ -72,24 +147,37 @@ ErrorCode CStlVector_Push(CStlVector *vector, void *data)
         }
     }
 
-    vector->datas[vector->length++] = data;
+    memcpy(vector->elements + (vector->length) * vector->elemSize, elem, vector->elemSize);
+    ++vector->length;
     vector->lastErrCode = ERR_COMM_SUCCESS;
     return vector->lastErrCode;
 }
 
-void *CStlVector_Pop(CStlVector *vector)
+ErrorCode CStlVector_Pop(CStlVector *vector, void *elem)
 {
-    if (vector == NULL) {
-        return vector;
+    if (vector == NULL || vector->elements == NULL) {
+        return ERR_COMM_PARAM_NULL;
     }
+
     if (vector->length == 0) {
-        return NULL;
+        memset(elem, 0, vector->elemSize);
+        vector->lastErrCode = ERR_CSTL_PARAM_CONTAINER_EMPTY;
+        return vector->lastErrCode;
     }
-    void *data = vector->datas[vector->length--];
 
-    if (vector->capacity > CSTL_VECTOR_DEFAULT_SIZE && vector->length <= vector->capacity / 4) {
-        CStlVector_Resize(vector, COMM_MAX(CSTL_VECTOR_DEFAULT_SIZE, vector->capacity / 2));
-
+    vector->lastErrCode = ERR_COMM_SUCCESS;
+    void *ptr = vector->elements + (vector->length - 1) * vector->elemSize;
+    vector->length--;
+    if (elem != NULL) {
+        memcpy_s(elem, vector->elemSize, ptr, vector->elemSize);
     }
-    return data;
+    if (vector->capacity > CSTL_VECTOR_MIN_CAPACITY && vector->length <= vector->capacity / 4) {
+        CStlVector_Resize(vector, COMM_MAX(CSTL_VECTOR_MIN_CAPACITY, vector->capacity / 2));
+    }
+    return vector->lastErrCode;
+}
+
+ErrorCode CStlVector_GetLastError(const CStlVector *vector)
+{
+    return vector == NULL || vector->elements == NULL ? ERR_COMM_PARAM_NULL : vector->lastErrCode;
 }
