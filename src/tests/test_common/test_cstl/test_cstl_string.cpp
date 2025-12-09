@@ -116,7 +116,7 @@ TEST_F(Test_StlString, NewWithSize)
     EXPECT_EQ(CStlString_GetLastError(m_string), ERR_COMM_SUCCESS);
 }
 
-TEST_F(Test_StlString, Resize)
+TEST_F(Test_StlString, ResizeSuccess)
 {
     m_string = CStlString_NewBySize(1024, nullptr);
     EXPECT_EQ(CStlString_Length(m_string), 0);
@@ -127,7 +127,22 @@ TEST_F(Test_StlString, Resize)
         EXPECT_EQ(CStlString_GetLastError(m_string), ERR_COMM_SUCCESS);
         EXPECT_EQ(CStlString_Capacity(m_string), i);
     }
+}
+
+TEST_F(Test_StlString, ResizeInvalid)
+{
+    m_string = CStlString_NewBySize(1024, nullptr);
+    EXPECT_EQ(CStlString_Length(m_string), 0);
+    EXPECT_EQ(CStlString_Capacity(m_string), 1024);
+    EXPECT_EQ(CStlString_GetLastError(m_string), ERR_COMM_SUCCESS);
 
     CStlString_Resize(m_string, CSTL_STRING_MAX_CAPACITY + 1);
-    EXPECT_EQ(CStlString_GetLastError(m_string), ERR_CSTL_OUT_OF_RANGE);
+    EXPECT_EQ(CStlString_GetLastError(m_string), ERR_CSTL_CAPACITY_INVALID);
+    CStlString_Resize(m_string, 0);
+    EXPECT_EQ(CStlString_GetLastError(m_string), ERR_CSTL_CAPACITY_INVALID);
+    CStlString_Resize(m_string, CStlString_Length(m_string) - 1);
+    EXPECT_EQ(CStlString_GetLastError(m_string), ERR_CSTL_CAPACITY_INVALID);
+
+    ErrorCode errCode = CStlString_Resize(nullptr, 1);
+    EXPECT_EQ(errCode, ERR_COMM_PARAM_NULL);
 }

@@ -33,19 +33,26 @@ static void StlString_AppendVa(CStlString *string, const char *format, va_list a
     uint32_t newLength = string->length + (uint32_t)fmtLen;
     if (newLength < string->capacity) {
         string->length = newLength;
-        string->lastErrCode = ERR_SEV_SUCCESS;
-    } else if (newLength >= CSTL_STRING_MAX_CAPACITY) {
-        string->lastErrCode = ERR_CSTL_OUT_OF_RANGE;
-    } else {
         string->lastErrCode = ERR_COMM_SUCCESS;
-        string->cstr[string->length] = '\0';
-        uint32_t newCapacity = COMM_MIN(newLength + CSTL_STRING_INCREASE_SIZE, CSTL_STRING_MAX_CAPACITY);
-        CStlString_Resize(string, newCapacity);
+        goto FINISH;
+    }
+
+    if (newLength >= CSTL_STRING_MAX_CAPACITY) {
+        string->lastErrCode = ERR_CSTL_EXCEED_MAX_CAPACITY;
+        goto FINISH;
+    }
+
+    string->cstr[string->length] = '\0';
+    uint32_t newCapacity = COMM_MIN(newLength + CSTL_STRING_INCREASE_SIZE, CSTL_STRING_MAX_CAPACITY);
+    if (CStlString_Resize(string, newCapacity) == ERR_COMM_SUCCESS) {
         if (format != NULL) {
             vsnprintf(string->cstr + string->length, string->capacity - string->length, format, argsCpy);
         }
         string->length = newLength;
+        string->lastErrCode = ERR_COMM_SUCCESS;
     }
+
+FINISH:
     va_end(argsCpy);
     string->cstr[string->length] = '\0';
 }
@@ -144,23 +151,35 @@ CStlString *CStlString_Copy(const CStlString *srcStr)
     string->length = srcStr->length;
     string->capacity = srcStr->capacity;
     string->cstr = malloc(string->capacity);
-    strncpy(string->cstr, srcStr->cstr, string->capacity - 1);
+    strncpy_s(string->cstr, string->capacity, srcStr->cstr, srcStr->length + 1);
     string->lastErrCode = ERR_COMM_SUCCESS;
     return string;
 }
 
 ErrorCode CStlString_Resize(CStlString *string, uint32_t newCapacity)
 {
+    if (string == NULL) {
+        return ERR_COMM_PARAM_NULL;
+    }
     string->lastErrCode = ERR_COMM_SUCCESS;
-    if (newCapacity > CSTL_STRING_MAX_CAPACITY) {
-        string->lastErrCode = ERR_CSTL_OUT_OF_RANGE;
+    if (newCapacity > CSTL_STRING_MAX_CAPACITY || newCapacity == 0) {
+        string->lastErrCode = ERR_CSTL_CAPACITY_INVALID;
         return string->lastErrCode;
     }
-    char *newCstr = malloc(newCapacity);
-    strncpy(newCstr, string->cstr, newCapacity - 1);
-    free(string->cstr);
-    string->cstr = newCstr;
-    string->capacity = newCapacity;
+    if (string->length > newCapacity) {
+        string->lastErrCode = ERR_CSTL_CAPACITY_INVALID;
+        return string->lastErrCode;
+    }
+
+    char *newCstr = realloc(string->cstr, newCapacity);
+    if (newCstr == NULL) {
+        string->lastErrCode = ERR_COMM_MALLOC_FAILED;
+    } else {
+        string->cstr = newCstr;
+        string->capacity = newCapacity;
+        string->lastErrCode = ERR_COMM_SUCCESS;
+    }
+
     return string->lastErrCode;
 }
 
