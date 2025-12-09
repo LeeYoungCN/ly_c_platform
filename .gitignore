@@ -56,4 +56,5 @@ dkms.conf
 
 out
 external
+third_party
 third_lib
