@@ -5,8 +5,15 @@
 #include <string.h>
 
 #include "common/common_macro.h"
+#include "common/compiler/macros.h"
 #include "common/types/error_code.h"
 #include "cstl/cstl_error_code.h"
+
+#if PLATFORM_WINDOWS
+#define SAFE_MEMCPY(dst, dstSize, src, srcSize) memcpy_s(dst, dstSize, src, srcSize);
+#else
+#define SAFE_MEMCPY(dst, dstSize, src, srcSize) memcpy(dst, src, srcSize);
+#endif
 
 CStlVector *CStlVector_New(uint32_t elemSize)
 {
@@ -65,7 +72,7 @@ ErrorCode CStlVector_GetElem(CStlVector *vector, uint32_t idx, void *elem)
     }
     vector->lastErrCode = ERR_COMM_SUCCESS;
     char *ptr = vector->elements + idx * vector->elemSize;
-    memcpy(elem, ptr, vector->elemSize);
+    SAFE_MEMCPY(elem, vector->elemSize, ptr, vector->elemSize);
     return vector->lastErrCode;
 }
 
@@ -82,9 +89,11 @@ ErrorCode CStlVector_SetElem(CStlVector *vector, uint32_t idx, void *newElem, vo
 
     char *ptr = vector->elements + idx * vector->elemSize;
     if (oldElem != NULL) {
-        memcpy(oldElem, ptr, vector->elemSize);
+        SAFE_MEMCPY(oldElem, vector->elemSize, ptr, vector->elemSize);
     }
-    memcpy(ptr, newElem, vector->elemSize);
+
+    SAFE_MEMCPY(ptr, vector->elemSize, newElem, vector->elemSize);
+
     return vector->lastErrCode;
 }
 
@@ -146,7 +155,8 @@ ErrorCode CStlVector_Push(CStlVector *vector, void *elem)
         }
     }
 
-    memcpy(vector->elements + (vector->length) * vector->elemSize, elem, vector->elemSize);
+    SAFE_MEMCPY(vector->elements + (vector->length) * vector->elemSize, vector->elemSize, elem, vector->elemSize);
+
     ++vector->length;
     vector->lastErrCode = ERR_COMM_SUCCESS;
     return vector->lastErrCode;
@@ -168,7 +178,7 @@ ErrorCode CStlVector_Pop(CStlVector *vector, void *elem)
     void *ptr = vector->elements + (vector->length - 1) * vector->elemSize;
     vector->length--;
     if (elem != NULL) {
-        memcpy(elem, ptr, vector->elemSize);
+        SAFE_MEMCPY(elem, vector->elemSize, ptr, vector->elemSize);
     }
     if (vector->capacity > CSTL_VECTOR_MIN_CAPACITY && vector->length <= vector->capacity / 4) {
         CStlVector_Resize(vector, COMM_MAX(CSTL_VECTOR_MIN_CAPACITY, vector->capacity / 2));

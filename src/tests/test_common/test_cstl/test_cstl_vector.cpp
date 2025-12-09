@@ -50,7 +50,7 @@ TEST_F(Test_StlVector, PushAndPop)
         EXPECT_EQ(CStlVector_Push(m_vector, &i), ERR_COMM_SUCCESS);
         EXPECT_EQ(CStlVector_Length(m_vector), i);
     }
-    for (uint64_t i = maxNum; CStlVector_Length(m_vector) > 0 && i >= 0; i--) {
+    for (uint64_t i = maxNum; CStlVector_Length(m_vector) > 0 && i > 0; i--) {
         uint64_t n = 0;
         EXPECT_EQ(CStlVector_Pop(m_vector, &n), ERR_COMM_SUCCESS);
         EXPECT_EQ(n, i);

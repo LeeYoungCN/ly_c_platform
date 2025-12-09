@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "common/common_macro.h"
+#include "common/compiler/macros.h"
 #include "common/types/error_code.h"
 #include "cstl/cstl_error_code.h"
 
@@ -151,7 +152,11 @@ CStlString *CStlString_Copy(const CStlString *srcStr)
     string->length = srcStr->length;
     string->capacity = srcStr->capacity;
     string->cstr = malloc(string->capacity);
+#if PLATFORM_WINDOWS
+    strncpy_s(string->cstr, string->capacity, srcStr->cstr, srcStr->length + 1);
+#else
     strncpy(string->cstr, srcStr->cstr, srcStr->length + 1);
+#endif
     string->lastErrCode = ERR_COMM_SUCCESS;
     return string;
 }
