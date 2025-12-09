@@ -36,9 +36,16 @@ if (MINGW OR CMAKE_COMPILER_IS_GNUCXX OR
 endif()
 
 if (ENABLE_ASAN)
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address -fno-omit-frame-pointer")
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address -fno-omit-frame-pointer")
-    set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -fsanitize=address")
+    if (MSVC)
+        add_compile_options(/fsanitize=address)
+        add_compile_options(/fsanitize-address-options:detect_leaks=1)
+    # 调试信息 + 禁用优化
+        add_compile_options(/Zi /Od)
+    else()
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address -fno-omit-frame-pointer")
+        set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address -fno-omit-frame-pointer")
+        set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -fsanitize=address")
+    endif()
 endif()
 
 if (NOT CMAKE_BUILD_TYPE)
@@ -51,13 +58,6 @@ else()
     add_compile_definitions(NDEBUG_MODE)
 endif()
 
-if (ENABLE_ASAN)
-    # 启用 ASan 内存检测
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address -fno-omit-frame-pointer")
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address -fno-omit-frame-pointer")
-    set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -fsanitize=address")
-endif()
-
 include(${CMAKE_SOURCE_DIR}/cmake/get_cmake_preset.cmake)
 
 if (${CMAKE_INSTALL_PREFIX} STREQUAL "C:/Program Files (x86)/${PROJECT_NAME}" OR
@@ -65,9 +65,9 @@ if (${CMAKE_INSTALL_PREFIX} STREQUAL "C:/Program Files (x86)/${PROJECT_NAME}" OR
     set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/out/install/${CMAKE_PRESET}" CACHE STRING "Default CMAKE_INSTALL_PREFIX out/install/${CMAKE_PRESET}" FORCE)
 endif()
 
-if (NOT CMAKE_THIRD_PARTY_PATH)
-    set(CMAKE_THIRD_PARTY_PATH "${CMAKE_SOURCE_DIR}/third_party/${CMAKE_PRESET}" CACHE STRING "Default CMAKE_THIRD_PARTY_PATH third_party" FORCE)
-endif()
+# if (NOT CMAKE_THIRD_PARTY_PATH)
+#     set(CMAKE_THIRD_PARTY_PATH "${CMAKE_SOURCE_DIR}/third_party/${CMAKE_PRESET}" CACHE STRING "Default CMAKE_THIRD_PARTY_PATH third_party" FORCE)
+# endif()
 
 include(${CMAKE_SOURCE_DIR}/cmake/cmake_configure_info.cmake)
 
