@@ -13,7 +13,6 @@ typedef enum {
     ERR_SEV_FATAL = 4     // 严重错误（系统崩溃，不可恢复）
 } ErrorSeverity;
 
-typedef uint64_t ErrorCode;
 typedef uint16_t ModuleId;
 typedef uint16_t ErrorType;
 typedef uint16_t ErrorId;

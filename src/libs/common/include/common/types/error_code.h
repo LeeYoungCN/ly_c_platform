@@ -8,6 +8,8 @@ extern "C" {
 
 #include "common/types/common_types.h"
 
+typedef uint64_t ErrorCode;
+
 // 错误级别：高16位（第63~48位），掩码0xFFFF000000000000
 #define ERR_SEVERITY_MASK   0xFFFF000000000000ULL
 // 模块ID：中16位（第47~32位），掩码0x0000FFFF00000000
