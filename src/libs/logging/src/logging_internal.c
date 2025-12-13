@@ -12,7 +12,7 @@
 #include "internal/logging_internal.h"
 #include "logging/logging.h"
 
-const char *GetLogLevelName(LogLevel level)
+const char *Logging_GetLogLevelName(LogLevel level)
 {
     switch (level) {
         case LOG_DEBUG:

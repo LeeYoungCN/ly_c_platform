@@ -1,16 +1,16 @@
-#ifndef LOGGING_LOGGING_SINK_H
-#define LOGGING_LOGGING_SINK_H
+#ifndef LOGGING_LOGGING_SINK_BASE_H
+#define LOGGING_LOGGING_SINK_BASE_H
 
 #include "internal/logging_internal.h"
 
-typedef void (*LoggingSinkLogFunc)(LogRecord record);
+typedef void (*LoggingSinkLogFunc)(const LogRecord *record);
 typedef void (*LoggingSinkInitFunc)(void);
 typedef void (*LoggingSinkCloseFunc)(void);
 
-typedef struct {
+struct LoggingSinkBase {
     LoggingSinkInitFunc init;
     LoggingSinkLogFunc log;
     LoggingSinkCloseFunc close;
-} LoggingSinkBase;
+};
 
-#endif // LOGGING_LOGGING_SINK_H
+#endif // LOGGING_LOGGING_SINK_BASE_H

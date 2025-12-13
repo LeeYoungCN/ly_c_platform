@@ -35,7 +35,7 @@ typedef struct {
  * @param level 日志级别
  * @return const char* 日志级别字符串
  */
-const char *GetLogLevelName(LogLevel level);
+const char *Logging_GetLogLevelName(LogLevel level);
 
 #ifdef __cplusplus
 }

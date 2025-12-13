@@ -44,6 +44,10 @@ void Logging_Close(void);
 
 void Logging_RegisterSink(LoggingSinkBase *sink);
 
+void Logging_SetAllowedLevel(LogLevel level);
+
+#define LOG(level, fmt, ...) Logging_Log(__FILE__, __LINE__, __func__, level, fmt, __VA_ARGS__)
+
 #ifdef __cplusplus
 }  // 结束 extern "C" 块
 #endif

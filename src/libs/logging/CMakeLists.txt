@@ -18,7 +18,7 @@ target_include_directories(${LIB_NAME}
 set_target_properties(${LIB_NAME} PROPERTIES
     WINDOWS_EXPORT_ALL_SYMBOLS ON  # 自动导出所有符号
 )
-# target_link_libraries(${LIB_NAME} PRIVATE common)
+target_link_libraries(${LIB_NAME} PRIVATE common)
 
 if (MINGW)
     target_link_libraries(${LIB_NAME} PRIVATE pthread)
