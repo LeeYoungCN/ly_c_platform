@@ -1,7 +1,8 @@
 #include <cstdint>
 #include <cstdio>
 
-#include "common/types/error_code.h"
+#include "common/common_error_code.h"
+#include "common/types/error_code_types.h"
 #include "cstl/cstl_error_code.h"
 #include "cstl/cstl_string.h"
 #include "gtest/gtest.h"

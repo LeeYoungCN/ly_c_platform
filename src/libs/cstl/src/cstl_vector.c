@@ -4,9 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "common/common_macro.h"
+#include "common/common_error_code.h"
 #include "common/compiler/macros.h"
-#include "common/types/error_code.h"
+#include "common/macros/math_macro.h"
+#include "common/types/error_code_types.h"
 #include "cstl/cstl_error_code.h"
 
 #if PLATFORM_WINDOWS

@@ -4,7 +4,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include "common/types/error_code.h"
+#include "common/types/error_code_types.h"
 
 static const uint32_t CSTL_VECTOR_MIN_CAPACITY = 4;
 static const uint32_t CSTL_VECTOR_MAX_CAPACITY = 4096;

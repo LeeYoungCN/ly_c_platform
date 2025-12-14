@@ -1,6 +1,6 @@
 #include <cstdint>
 
-#include "common/types/error_code.h"
+#include "common/common_error_code.h"
 #include "cstl/cstl_vector.h"
 #include "gtest/gtest.h"
 

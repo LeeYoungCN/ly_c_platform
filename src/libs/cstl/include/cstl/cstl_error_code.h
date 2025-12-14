@@ -1,6 +1,6 @@
 #ifndef CSTL_CSTL_ERROR_CODE_H
 #define CSTL_CSTL_ERROR_CODE_H
-#include "common/types/error_code.h"
+#include "common/types/error_code_types.h"
 
 #define CSTL_MODULE_ID 1
 

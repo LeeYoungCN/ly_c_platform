@@ -1,8 +1,10 @@
-#include "common/os/file_system.h"
+#include "common/utils/file_system_utils.h"
 
 #include <stdint.h>
 
-const char *FS_GetFileName(const char *file)
+#include "common/constants/file_system_constants.h"
+
+const char *Utils_GetFileName(const char *file)
 {
     uint32_t rst = 0;
     for (uint32_t i = 0; file[i] != '\0'; i++) {

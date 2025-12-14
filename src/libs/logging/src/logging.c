@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "common/os/file_system.h"
+#include "common/utils/file_system_utils.h"
 #include "internal/logging_internal.h"
 #include "internal/logging_sink_base.h"
 
@@ -60,7 +60,7 @@ void Logging_Log(const char *file, int line, const char *func, LogLevel level, c
 
     if (g_sinkCnt == 0) {
         printf("[%s:%d] [%s] %s\n",
-               FS_GetFileName(record.file),
+               Utils_GetFileName(record.file),
                record.line,
                Logging_GetLogLevelName(record.level),
                record.buffer);

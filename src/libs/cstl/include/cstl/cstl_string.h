@@ -7,7 +7,7 @@ extern "C" {
 
 #include <stdint.h>
 
-#include "common/types/error_code.h"
+#include "common/types/error_code_types.h"
 
 #define CSTL_STRING_MAX_CAPACITY (4096)
 

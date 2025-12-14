@@ -1,4 +1,4 @@
-#include "common/os/file_system.h"
+#include "common/utils/file_system_utils.h"
 #include <filesystem>
 #include "gtest/gtest.h"
 
@@ -19,6 +19,6 @@ void Test_FileSystem::TearDown()
 TEST_F(Test_FileSystem, FileName)
 {
     auto expect = std::filesystem::path(__FILE__).filename().string();
-    auto result = FS_GetFileName(__FILE__);
+    auto result = Utils_GetFileName(__FILE__);
     EXPECT_STREQ(result, expect.c_str());
 }
