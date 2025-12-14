@@ -1,10 +1,12 @@
+#include "common/utils/date_time_utils.h"
+
 #include <stdint.h>
 
 #include "common/common_error_code.h"
 #include "common/constants/date_time_constants.h"
 #include "common/types/date_time_types.h"
 #include "common/types/error_code_types.h"
-#include "common/utils/date_time_utils.h"
+#include "internal/utils/date_time_internal.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -14,9 +16,9 @@
 #include <stdbool.h>
 #include <time.h>
 
-_Thread_local volatile ErrorCode g_lastErr = ERR_COMM_SUCCESS;
 
-bool SafeLocalTime(time_t timer, struct tm* timeInfo)
+
+static ErrorCode SafeLocalTime(time_t timer, struct tm* timeInfo)
 {
 #ifdef _WIN32
     // Windows 使用 localtime_s
@@ -34,40 +36,44 @@ bool SafeLocalTime(time_t timer, struct tm* timeInfo)
 #else
     // Linux/macOS 使用 localtime_r
     if (localtime_r(&timer, timeInfo) == NULL) {
-        // SetLastError(ErrorCode::TIMESTAMP_INVALID);
+        DtInternal_SetLastError(ERR_COMM_TIMESTAMP_INVALID);
         // DEBUG_LOG_ERR("[FAILED] localtime_r. time: %lld, errno: %d", timer, errno);
-        return false;
+        return ERR_COMM_TIMESTAMP_INVALID;
     }
 #endif
-    // SetLastError(ErrorCode::SUCCESS);
-    return true;
+    DtInternal_SetLastError(ERR_COMM_SUCCESS);
+    return ERR_COMM_SUCCESS;
 }
 
-bool SafeGmtime(time_t timer, struct tm* timeInfo)
+static ErrorCode SafeGmtime(time_t timer, struct tm* timeInfo)
 {
+    if (timeInfo == NULL) {
+        DtInternal_SetLastError(ERR_COMM_PARAM_NULL);
+        return ERR_COMM_PARAM_NULL;
+    }
 #ifdef _WIN32
     // Windows下使用gmtime_s，增加负数时间戳检查
     errno_t err = gmtime_s(timeInfo, &timer);
     if (err != 0) {
-        // SetLastError(ErrorCode::TIMESTAMP_INVALID);
+        DtInternal_SetLastError(ERR_COMM_TIMESTAMP_INVALID);
         // // 针对负数时间戳的错误做特殊提示
         // if (timer < 0) {
         //     DEBUG_LOG_WARN("[FAILED] gmtime_s may not support negative time: %lld, err: %d", timer, err);
         // } else {
         //     DEBUG_LOG_ERR("[FAILED] gmtime_s time: %lld, err: %d", timer, err);
         // }
-        return false;
+        return ERR_COMM_TIMESTAMP_INVALID;
     }
 #else
     // Linux/macOS使用gmtime_r（对负数时间戳支持更完善）
     if (gmtime_r(&timer, timeInfo) == NULL) {
-        // SetLastError(ErrorCode::TIMESTAMP_INVALID);
+        DtInternal_SetLastError(ERR_COMM_TIMESTAMP_INVALID);
         // DEBUG_LOG_ERR("[FAILED] gmtime_r. time: %lld, errno: %d", timer, errno);
-        return false;
+        return ERR_COMM_TIMESTAMP_INVALID;
     }
 #endif
-    // SetLastError(ErrorCode::SUCCESS);
-    return true;
+    DtInternal_SetLastError(ERR_COMM_SUCCESS);
+    return ERR_COMM_SUCCESS;
 }
 
 void ConvertTmToTimeComp(const struct tm timeInfo, int32_t millis, TimeComponent* timeComp)
@@ -85,6 +91,7 @@ void ConvertTmToTimeComp(const struct tm timeInfo, int32_t millis, TimeComponent
 
 TimestampMs GetCurrentTimestampMs(void)
 {
+    DtInternal_SetLastError(ERR_COMM_SUCCESS);
 #ifdef _WIN32
     FILETIME ft;
     // 获取当前系统时间，以FILETIME格式存储（从Windows纪元1601-01-01 00:00:00开始的100纳秒间隔数）
@@ -130,7 +137,7 @@ TimeComponent TimeStampMs2Component(TimestampMs timestamp, TimeZone timeZone)
 
     struct tm timeInfo = {0};
     TimeComponent timeComp = {0};
-    bool rst = false;
+    ErrorCode rst = false;
     switch (timeZone) {
         case TZ_UTC:
             rst = SafeGmtime(timer, &timeInfo);
@@ -140,14 +147,19 @@ TimeComponent TimeStampMs2Component(TimestampMs timestamp, TimeZone timeZone)
             rst = SafeLocalTime(timer, &timeInfo);
     }
 
-    if (!rst) {
+    if (rst != ERR_COMM_SUCCESS) {
         // DEBUG_LOG_ERR(
         // "[FAILED] Get time info, zone: %s, message: %s.", GetTimeZoneString(timeZone), GetLastErrorString());
     } else {
         ConvertTmToTimeComp(timeInfo, millis, &timeComp);
-        // SetLastError(ErrorCode::SUCCESS);
+        DtInternal_SetLastError(ERR_COMM_SUCCESS);
         // DEBUG_LOG_DBG(
         //     "[SUCCESS] Get time info, zone: %s, message: %s.", GetTimeZoneString(timeZone), GetLastErrorString());
     }
     return timeComp;
+}
+
+ErrorCode DT_GetLastError(void)
+{
+    return DtInternal_GetLastErr();
 }

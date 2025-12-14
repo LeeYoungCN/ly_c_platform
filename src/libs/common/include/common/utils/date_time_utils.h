@@ -1,6 +1,7 @@
 #ifndef COMMON_UTILS_DATE_TIME_UTILS_H
 #define COMMON_UTILS_DATE_TIME_UTILS_H
 
+#include "common/types/error_code_types.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -46,6 +47,8 @@ TimeComponent UtcTimeComponent(TimestampMs timestamp);
  *         失败时返回所有字段为0的结构
  */
 TimeComponent TimeStampMs2Component(TimestampMs timestamp, TimeZone timeZone);
+
+ErrorCode DT_GetLastError(void);
 
 #ifdef __cplusplus
 }
