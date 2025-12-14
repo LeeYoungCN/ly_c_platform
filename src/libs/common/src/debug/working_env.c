@@ -4,6 +4,7 @@
 #if PLATFORM_WINDOWS
 #include <windows.h>
 #elif PLATFORM_LINUX
+#include <stdlib.h>
 #include <unistd.h>  // Linux的readlink函数
 #elif PLATFORM_MACOS
 #include <mach-o/dyld.h>  // macOS的_NSGetExecutablePath
@@ -77,7 +78,7 @@ static void PrintProcessPath(void)
 #if PLATFORM_WINDOWS
     GetModuleFileNameA(NULL, path, PATH_BUFFER_LEN);
 #elif PLATFORM_LINUX
-    auto length = readlink("/proc/self/exe", path, PATH_BUFFER_LEN - 1);
+    ssize_t length = readlink("/proc/self/exe", path, PATH_BUFFER_LEN - 1);
     path[length] = '\0';
 #elif PLATFORM_MACOS
     uint32_t size = sizeof(path);
@@ -128,16 +129,13 @@ static void PrintEnvParams(void)
     for (uint32_t i = 0; i < sizeof(ENV_NAMES) / sizeof(char*); i++) {
         const char* name = ENV_NAMES[i];
         char* value = NULL;
-        errno_t err = 0;
-        size_t len = 0;
 #if COMPILER_MSVC
-        err = _dupenv_s(&value, &len, name);
+        size_t len = 0;
+        errno_t err = _dupenv_s(&value, &len, name);
 #else
-        (void)err;
-        (void)len;
         value = getenv(name);
 #endif
-        if (err == 0 && value != NULL) {
+        if (value != NULL) {
             printf("-------------------- %s  --------------------\n", name);
             printf("%s: %s\n", name, value);
 #if COMPILER_MSVC
@@ -174,7 +172,6 @@ static void PrintWorkingDir(void)
     // 获取当前工作目录
     GetCurrentDirectory(PATH_BUFFER_LEN, cwd);
 #else
-    char cwd[PATH_BUFFER_LEN];
     // 获取当前工作目录
     getcwd(cwd, sizeof(cwd));
 #endif

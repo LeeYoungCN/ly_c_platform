@@ -8,11 +8,13 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#else
+#include <sys/time.h>
 #endif  // _WIN32
 #include <stdbool.h>
 #include <time.h>
 
-_Thread_local  volatile ErrorCode g_lastErr = ERR_COMM_SUCCESS;
+_Thread_local volatile ErrorCode g_lastErr = ERR_COMM_SUCCESS;
 
 bool SafeLocalTime(time_t timer, struct tm* timeInfo)
 {
@@ -31,9 +33,9 @@ bool SafeLocalTime(time_t timer, struct tm* timeInfo)
     }
 #else
     // Linux/macOS 使用 localtime_r
-    if (localtime_r(&timer, timeInfo) == nullptr) {
-        SetLastError(ErrorCode::TIMESTAMP_INVALID);
-        DEBUG_LOG_ERR("[FAILED] localtime_r. time: %lld, errno: %d", timer, errno);
+    if (localtime_r(&timer, timeInfo) == NULL) {
+        // SetLastError(ErrorCode::TIMESTAMP_INVALID);
+        // DEBUG_LOG_ERR("[FAILED] localtime_r. time: %lld, errno: %d", timer, errno);
         return false;
     }
 #endif
@@ -58,9 +60,9 @@ bool SafeGmtime(time_t timer, struct tm* timeInfo)
     }
 #else
     // Linux/macOS使用gmtime_r（对负数时间戳支持更完善）
-    if (gmtime_r(&timer, &timeInfo) == nullptr) {
-        SetLastError(ErrorCode::TIMESTAMP_INVALID);
-        DEBUG_LOG_ERR("[FAILED] gmtime_r. time: %lld, errno: %d", timer, errno);
+    if (gmtime_r(&timer, timeInfo) == NULL) {
+        // SetLastError(ErrorCode::TIMESTAMP_INVALID);
+        // DEBUG_LOG_ERR("[FAILED] gmtime_r. time: %lld, errno: %d", timer, errno);
         return false;
     }
 #endif

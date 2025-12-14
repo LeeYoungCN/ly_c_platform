@@ -1,5 +1,7 @@
 #include "common/utils/error_code_utils.h"
 
+#include <stddef.h>
+
 #include "common/common_error_code.h"
 #include "common/types/error_code_types.h"
 

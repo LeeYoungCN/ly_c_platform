@@ -25,7 +25,7 @@ extern "C" {
 #define ERR_COMM_PARAM_NULL MAKE_ERROR(ERR_SEV_ERROR, COMMON_MODULE_ID, COMM_ERR_TYPE_PARAM, 2)     // 空指针
 #define ERR_COMM_PARAM_INVALID MAKE_ERROR(ERR_SEV_ERROR, COMMON_MODULE_ID, COMM_ERR_TYPE_PARAM, 3)  // 入参不合法
 
-inline const char *ErrCode_GetCommErrMsg(ErrorCode errCode)
+static inline const char *ErrCode_GetCommErrMsg(ErrorCode errCode)
 {
     switch (errCode) {
         case 0:
