@@ -7,8 +7,8 @@ extern "C" {
 
 #include "common/types/error_code_types.h"
 
-ErrorCode DtInternal_GetLastErr(void);
-void      DtInternal_SetLastError(ErrorCode errcode);
+ErrorCode DtInter_GetLastErr(void);
+void      DtInter_SetLastErr(ErrorCode errcode);
 
 #ifdef __cplusplus
 }

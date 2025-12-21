@@ -2,9 +2,8 @@
 #include <cstdio>
 
 #include "common/common_error_code.h"
+#include "common/cstl/cstl_string.h"
 #include "common/types/error_code_types.h"
-#include "cstl/cstl_error_code.h"
-#include "cstl/cstl_string.h"
 #include "gtest/gtest.h"
 
 using namespace std;
@@ -138,11 +137,11 @@ TEST_F(Test_StlString, ResizeInvalid)
     EXPECT_EQ(CStlString_GetLastError(m_string), ERR_COMM_SUCCESS);
 
     CStlString_Resize(m_string, CSTL_STRING_MAX_CAPACITY + 1);
-    EXPECT_EQ(CStlString_GetLastError(m_string), ERR_CSTL_PARAM_CAPACITY_INVALID);
+    EXPECT_EQ(CStlString_GetLastError(m_string), ERR_COMM_PARAM_CAPACITY_INVALID);
     CStlString_Resize(m_string, 0);
-    EXPECT_EQ(CStlString_GetLastError(m_string), ERR_CSTL_PARAM_CAPACITY_INVALID);
+    EXPECT_EQ(CStlString_GetLastError(m_string), ERR_COMM_PARAM_CAPACITY_INVALID);
     CStlString_Resize(m_string, CStlString_Length(m_string) - 1);
-    EXPECT_EQ(CStlString_GetLastError(m_string), ERR_CSTL_PARAM_CAPACITY_INVALID);
+    EXPECT_EQ(CStlString_GetLastError(m_string), ERR_COMM_PARAM_CAPACITY_INVALID);
 
     ErrorCode errCode = CStlString_Resize(nullptr, 1);
     EXPECT_EQ(errCode, ERR_COMM_PARAM_NULL);

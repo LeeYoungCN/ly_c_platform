@@ -1,4 +1,4 @@
-#include "cstl/cstl_vector.h"
+#include "common/cstl/cstl_vector.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -8,7 +8,6 @@
 #include "common/compiler/macros.h"
 #include "common/macros/math_macro.h"
 #include "common/types/error_code_types.h"
-#include "cstl/cstl_error_code.h"
 
 #if PLATFORM_WINDOWS
 #define SAFE_MEMCPY(dst, dstSize, src, srcSize) memcpy_s(dst, dstSize, src, srcSize);
@@ -68,7 +67,7 @@ ErrorCode CStlVector_GetElem(CStlVector *vector, uint32_t idx, void *elem)
         return ERR_COMM_PARAM_NULL;
     }
     if (idx >= vector->length) {
-        vector->lastErrCode = ERR_CSTL_PARAM_IDX_INVALID;
+        vector->lastErrCode = ERR_COMM_PARAM_IDX_INVALID;
         return vector->lastErrCode;
     }
     vector->lastErrCode = ERR_COMM_SUCCESS;
@@ -83,8 +82,8 @@ ErrorCode CStlVector_SetElem(CStlVector *vector, uint32_t idx, void *newElem, vo
         return ERR_COMM_PARAM_NULL;
     }
     if (idx >= vector->length) {
-        vector->lastErrCode = ERR_CSTL_PARAM_IDX_INVALID;
-        return ERR_CSTL_PARAM_IDX_INVALID;
+        vector->lastErrCode = ERR_COMM_PARAM_IDX_INVALID;
+        return ERR_COMM_PARAM_IDX_INVALID;
     }
     vector->lastErrCode = ERR_COMM_SUCCESS;
 
@@ -117,12 +116,12 @@ ErrorCode CStlVector_Resize(CStlVector *vector, uint32_t newCapacity)
     vector->lastErrCode = ERR_COMM_SUCCESS;
 
     if (newCapacity > CSTL_VECTOR_MAX_CAPACITY) {
-        vector->lastErrCode = ERR_CSTL_EXCEED_MAX_CAPACITY;
+        vector->lastErrCode = ERR_COMM_EXCEED_MAX_CAPACITY;
         return vector->lastErrCode;
     }
 
     if (vector->length > newCapacity || newCapacity < CSTL_VECTOR_MIN_CAPACITY) {
-        vector->lastErrCode = ERR_CSTL_PARAM_CAPACITY_INVALID;
+        vector->lastErrCode = ERR_COMM_PARAM_CAPACITY_INVALID;
         return vector->lastErrCode;
     }
 
@@ -145,7 +144,7 @@ ErrorCode CStlVector_Push(CStlVector *vector, void *elem)
     }
 
     if (vector->length >= CSTL_VECTOR_MAX_CAPACITY) {
-        vector->lastErrCode = ERR_CSTL_EXCEED_MAX_CAPACITY;
+        vector->lastErrCode = ERR_COMM_EXCEED_MAX_CAPACITY;
         return vector->lastErrCode;
     }
 
@@ -171,7 +170,7 @@ ErrorCode CStlVector_Pop(CStlVector *vector, void *elem)
 
     if (vector->length == 0) {
         memset(elem, 0, vector->elemSize);
-        vector->lastErrCode = ERR_CSTL_PARAM_CONTAINER_EMPTY;
+        vector->lastErrCode = ERR_COMM_PARAM_CONTAINER_EMPTY;
         return vector->lastErrCode;
     }
 

@@ -1,5 +1,5 @@
-#ifndef CSTL_STRING_H
-#define CSTL_STRING_H
+#ifndef COMMON_CSTL_STRING_H
+#define COMMON_CSTL_STRING_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,4 +37,4 @@ ErrorCode CStlString_GetLastError(const CStlString *string);
 }
 #endif
 
-#endif  // CSTL_STRING_H
+#endif  // COMMON_CSTL_STRING_H

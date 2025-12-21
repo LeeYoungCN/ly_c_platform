@@ -1,5 +1,5 @@
-#ifndef CSTL_VECTOR_H
-#define CSTL_VECTOR_H
+#ifndef COMMON_CSTL_VECTOR_H
+#define COMMON_CSTL_VECTOR_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -51,4 +51,4 @@ ErrorCode CStlVector_GetLastError(const CStlVector *vector);
 }
 #endif
 
-#endif  // CSTL_VECTOR_H
+#endif  // COMMON_CSTL_VECTOR_H

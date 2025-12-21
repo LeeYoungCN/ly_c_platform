@@ -36,19 +36,19 @@ static ErrorCode SafeLocalTime(time_t timer, struct tm* timeInfo)
 #else
     // Linux/macOS 使用 localtime_r
     if (localtime_r(&timer, timeInfo) == NULL) {
-        DtInternal_SetLastError(ERR_COMM_TIMESTAMP_INVALID);
+        DtInter_SetLastErr(ERR_COMM_TIMESTAMP_INVALID);
         // DEBUG_LOG_ERR("[FAILED] localtime_r. time: %lld, errno: %d", timer, errno);
         return ERR_COMM_TIMESTAMP_INVALID;
     }
 #endif
-    DtInternal_SetLastError(ERR_COMM_SUCCESS);
+    DtInter_SetLastErr(ERR_COMM_SUCCESS);
     return ERR_COMM_SUCCESS;
 }
 
 static ErrorCode SafeGmtime(time_t timer, struct tm* timeInfo)
 {
     if (timeInfo == NULL) {
-        DtInternal_SetLastError(ERR_COMM_PARAM_NULL);
+        DtInter_SetLastErr(ERR_COMM_PARAM_NULL);
         return ERR_COMM_PARAM_NULL;
     }
 #ifdef _WIN32
@@ -67,12 +67,12 @@ static ErrorCode SafeGmtime(time_t timer, struct tm* timeInfo)
 #else
     // Linux/macOS使用gmtime_r（对负数时间戳支持更完善）
     if (gmtime_r(&timer, timeInfo) == NULL) {
-        DtInternal_SetLastError(ERR_COMM_TIMESTAMP_INVALID);
+        DtInter_SetLastErr(ERR_COMM_TIMESTAMP_INVALID);
         // DEBUG_LOG_ERR("[FAILED] gmtime_r. time: %lld, errno: %d", timer, errno);
         return ERR_COMM_TIMESTAMP_INVALID;
     }
 #endif
-    DtInternal_SetLastError(ERR_COMM_SUCCESS);
+    DtInter_SetLastErr(ERR_COMM_SUCCESS);
     return ERR_COMM_SUCCESS;
 }
 
@@ -91,7 +91,7 @@ void ConvertTmToTimeComp(const struct tm timeInfo, int32_t millis, TimeComponent
 
 TimestampMs GetCurrentTimestampMs(void)
 {
-    DtInternal_SetLastError(ERR_COMM_SUCCESS);
+    DtInter_SetLastErr(ERR_COMM_SUCCESS);
 #ifdef _WIN32
     FILETIME ft;
     // 获取当前系统时间，以FILETIME格式存储（从Windows纪元1601-01-01 00:00:00开始的100纳秒间隔数）
@@ -152,7 +152,7 @@ TimeComponent TimeStampMs2Component(TimestampMs timestamp, TimeZone timeZone)
         // "[FAILED] Get time info, zone: %s, message: %s.", GetTimeZoneString(timeZone), GetLastErrorString());
     } else {
         ConvertTmToTimeComp(timeInfo, millis, &timeComp);
-        DtInternal_SetLastError(ERR_COMM_SUCCESS);
+        DtInter_SetLastErr(ERR_COMM_SUCCESS);
         // DEBUG_LOG_DBG(
         //     "[SUCCESS] Get time info, zone: %s, message: %s.", GetTimeZoneString(timeZone), GetLastErrorString());
     }
@@ -161,5 +161,5 @@ TimeComponent TimeStampMs2Component(TimestampMs timestamp, TimeZone timeZone)
 
 ErrorCode DT_GetLastError(void)
 {
-    return DtInternal_GetLastErr();
+    return DtInter_GetLastErr();
 }

@@ -6,8 +6,9 @@
 extern "C" {
 #endif
 
-#include "common/types/date_time_types.h"
+#include <stddef.h>
 
+#include "common/types/date_time_types.h"
 /**
  * @brief 获取当前系统时间的毫秒级时间戳
  * @details 以Unix纪元（1970-01-01 00:00:00 UTC）为基准，返回当前时间的毫秒数
@@ -47,6 +48,39 @@ TimeComponent UtcTimeComponent(TimestampMs timestamp);
  *         失败时返回所有字段为0的结构
  */
 TimeComponent TimeStampMs2Component(TimestampMs timestamp, TimeZone timeZone);
+
+/**
+ * @brief 获取月份的完整英文名称
+ * @param[in] month 月份（1-12，1表示一月，12表示十二月）
+ * @return const char* 完整月份名称（如"January"）
+ *         若参数超出范围，返回空字符串视图
+ */
+const char* GetMonthFullName(uint32_t month);
+
+/**
+ * @brief 获取月份的缩写英文名称
+ * @param[in] month 月份（1-12）
+ * @return const char* 缩写月份名称（如"Jan"）
+ *         若参数超出范围，返回空字符串视图
+ */
+const char* GetMonthAbbrName(uint32_t month);
+
+/**
+ * @brief 获取星期的完整英文名称
+ * @param[in] weekday 星期（0-6，0表示星期日，6表示星期六）
+ * @return const char* 完整星期名称（如"Monday"）
+ *         若参数超出范围，返回空字符串视图
+ */
+const char* GetWeekdayFullName(uint32_t weekday);
+
+/**
+ * @brief 获取星期的缩写英文名称
+ * @param[in] weekday 星期（0-6）
+ * @return const char* 缩写星期名称（如"Mon"）
+ *         若参数超出范围，返回空字符串视图
+ */
+const char* GetWeekdayAbbrName(uint32_t weekday);
+
 
 ErrorCode DT_GetLastError(void);
 

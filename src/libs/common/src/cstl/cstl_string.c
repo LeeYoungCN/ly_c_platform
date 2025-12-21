@@ -1,4 +1,4 @@
-#include "cstl/cstl_string.h"
+#include "common/cstl/cstl_string.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -9,7 +9,6 @@
 #include "common/compiler/macros.h"
 #include "common/macros/math_macro.h"
 #include "common/types/error_code_types.h"
-#include "cstl/cstl_error_code.h"
 
 #define CSTL_STRING_DEFAULT_SIZE (128)
 #define CSTL_STRING_INCREASE_SIZE (128)
@@ -40,7 +39,7 @@ static void StlString_AppendVa(CStlString *string, const char *format, va_list a
     }
 
     if (newLength >= CSTL_STRING_MAX_CAPACITY) {
-        string->lastErrCode = ERR_CSTL_EXCEED_MAX_CAPACITY;
+        string->lastErrCode = ERR_COMM_EXCEED_MAX_CAPACITY;
         goto FINISH;
     }
 
@@ -169,11 +168,11 @@ ErrorCode CStlString_Resize(CStlString *string, uint32_t newCapacity)
     }
     string->lastErrCode = ERR_COMM_SUCCESS;
     if (newCapacity > CSTL_STRING_MAX_CAPACITY || newCapacity == 0) {
-        string->lastErrCode = ERR_CSTL_PARAM_CAPACITY_INVALID;
+        string->lastErrCode = ERR_COMM_PARAM_CAPACITY_INVALID;
         return string->lastErrCode;
     }
     if (string->length > newCapacity) {
-        string->lastErrCode = ERR_CSTL_PARAM_CAPACITY_INVALID;
+        string->lastErrCode = ERR_COMM_PARAM_CAPACITY_INVALID;
         return string->lastErrCode;
     }
 

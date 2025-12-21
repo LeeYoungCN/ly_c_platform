@@ -6,12 +6,12 @@
 
 thread_local ErrorCode g_lastErr = ERR_COMM_SUCCESS;
 
-ErrorCode DtInternal_GetLastErr(void)
+ErrorCode DtInter_GetLastErr(void)
 {
     return g_lastErr;
 }
 
-void DtInternal_SetLastError(ErrorCode errcode)
+void DtInter_SetLastErr(ErrorCode errcode)
 {
     g_lastErr = errcode;
 }
