@@ -12,16 +12,9 @@ ErrModuleId ErrCode_GetModuleId(ErrorCode err);
 ErrorType ErrCode_GetErrorType(ErrorCode err);
 ErrorId ErrCode_GetErrorId(ErrorCode err);
 
-typedef const char *(*ErrCode_GetErrMsgFunc)(ErrorCode);
-
-typedef struct {
-    ErrModuleId moduleId;
-    const char *moduleName;
-    ErrCode_GetErrMsgFunc getErrMsgFunc;
-} ErrModuleData;
-
-void ErrCode_RegisterModule(ErrModuleData data);
-const char *ErrCode_GetErrMsg(ErrorCode err);
+void SetLastError(ErrorCode errcode);
+ErrorCode GetLastError(void);
+const char *GetLastErrStr(void);
 
 #ifdef __cplusplus
 }

@@ -1,11 +1,11 @@
 #include "common/utils/error_code_utils.h"
 
 #include <stddef.h>
+#include <threads.h>
 
 #include "common/common_error_code.h"
 #include "common/types/error_code_types.h"
 
-static ErrModuleData g_currModuleDatas[MAX_MODULE_ID + 1] = {0};
 
 ErrorSeverity ErrCode_GetSeverity(ErrorCode err)
 {
@@ -27,22 +27,19 @@ ErrorId ErrCode_GetErrorId(ErrorCode err)
     return (uint8_t)((err & ERR_ID_MASK) >> ERR_ID_SHIFT);
 }
 
-void ErrCode_RegisterModule(ErrModuleData data)
+static volatile thread_local ErrorCode g_lastErr = ERR_COMM_SUCCESS;
+
+void SetLastError(ErrorCode errcode)
 {
-    g_currModuleDatas[data.moduleId] = data;
+    g_lastErr = errcode;
 }
 
-const char *ErrCode_GetErrMsg(ErrorCode errorCode)
+ErrorCode GetLastError(void)
 {
-    ErrModuleId moduleId = ErrCode_GetModuleId(errorCode);
+    return g_lastErr;
+}
 
-    if (moduleId == COMMON_MODULE_ID) {
-        return ErrCode_GetCommErrMsg(errorCode);
-    }
-
-    if (g_currModuleDatas[moduleId].getErrMsgFunc == NULL) {
-        return "Module not register";
-    }
-
-    return (*g_currModuleDatas[moduleId].getErrMsgFunc)(errorCode);
+const char *GetLastErrStr(void)
+{
+    return ErrCode_GetCommErrMsg(g_lastErr);
 }

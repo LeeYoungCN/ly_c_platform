@@ -4,9 +4,10 @@
 
 #include "common/common_error_code.h"
 #include "common/constants/date_time_constants.h"
+#include "common/debug/debug_log.h"
 #include "common/types/date_time_types.h"
 #include "common/types/error_code_types.h"
-#include "internal/utils/date_time_internal.h"
+#include "common/utils/error_code_utils.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -16,39 +17,37 @@
 #include <stdbool.h>
 #include <time.h>
 
-
-
 static ErrorCode SafeLocalTime(time_t timer, struct tm* timeInfo)
 {
 #ifdef _WIN32
     // Windows 使用 localtime_s
     errno_t err = localtime_s(timeInfo, &timer);
     if (err != 0) {
-        // SetLastError(ErrorCode::TIMESTAMP_INVALID);
-        // 特别处理负数时间戳的错误提示
-        // if (timer < 0) {
-        //     DEBUG_LOG_WARN("[FAILED] localtime_s may not support negative. time: %lld, err: %d", timer, err);
-        // } else {
-        //     DEBUG_LOG_ERR("[FAILED] localtime_s. time: %lld, err: %d", timer, err);
-        // }
+        SetLastError(ERR_COMM_TIMESTAMP_INVALID);
+        特别处理负数时间戳的错误提示
+        if (timer < 0) {
+            DEBUG_LOG_WARN("[FAILED] localtime_s may not support negative. time: %lld, err: %d", timer, err);
+        } else {
+            DEBUG_LOG_ERR("[FAILED] localtime_s. time: %lld, err: %d", timer, err);
+        }
         return false;
     }
 #else
     // Linux/macOS 使用 localtime_r
     if (localtime_r(&timer, timeInfo) == NULL) {
-        DtInter_SetLastErr(ERR_COMM_TIMESTAMP_INVALID);
-        // DEBUG_LOG_ERR("[FAILED] localtime_r. time: %lld, errno: %d", timer, errno);
+        SetLastError(ERR_COMM_TIMESTAMP_INVALID);
+        DEBUG_LOG_ERR("[FAILED] localtime_r. time: %lld, msg: %s", timer, GetLastErrStr());
         return ERR_COMM_TIMESTAMP_INVALID;
     }
 #endif
-    DtInter_SetLastErr(ERR_COMM_SUCCESS);
+    SetLastError(ERR_COMM_SUCCESS);
     return ERR_COMM_SUCCESS;
 }
 
 static ErrorCode SafeGmtime(time_t timer, struct tm* timeInfo)
 {
     if (timeInfo == NULL) {
-        DtInter_SetLastErr(ERR_COMM_PARAM_NULL);
+        SetLastError(ERR_COMM_PARAM_NULL);
         return ERR_COMM_PARAM_NULL;
     }
 #ifdef _WIN32
@@ -56,23 +55,23 @@ static ErrorCode SafeGmtime(time_t timer, struct tm* timeInfo)
     errno_t err = gmtime_s(timeInfo, &timer);
     if (err != 0) {
         DtInternal_SetLastError(ERR_COMM_TIMESTAMP_INVALID);
-        // // 针对负数时间戳的错误做特殊提示
-        // if (timer < 0) {
-        //     DEBUG_LOG_WARN("[FAILED] gmtime_s may not support negative time: %lld, err: %d", timer, err);
-        // } else {
-        //     DEBUG_LOG_ERR("[FAILED] gmtime_s time: %lld, err: %d", timer, err);
-        // }
+        // 针对负数时间戳的错误做特殊提示
+        if (timer < 0) {
+            DEBUG_LOG_WARN("[FAILED] gmtime_s may not support negative time: %lld, err: %d", timer, err);
+        } else {
+            DEBUG_LOG_ERR("[FAILED] gmtime_s time: %lld, err: %d", timer, err);
+        }
         return ERR_COMM_TIMESTAMP_INVALID;
     }
 #else
     // Linux/macOS使用gmtime_r（对负数时间戳支持更完善）
     if (gmtime_r(&timer, timeInfo) == NULL) {
-        DtInter_SetLastErr(ERR_COMM_TIMESTAMP_INVALID);
-        // DEBUG_LOG_ERR("[FAILED] gmtime_r. time: %lld, errno: %d", timer, errno);
+        SetLastError(ERR_COMM_TIMESTAMP_INVALID);
+        DEBUG_LOG_ERR("[FAILED] gmtime_r. time: %lld, msg: %s", timer, GetLastErrStr());
         return ERR_COMM_TIMESTAMP_INVALID;
     }
 #endif
-    DtInter_SetLastErr(ERR_COMM_SUCCESS);
+    SetLastError(ERR_COMM_SUCCESS);
     return ERR_COMM_SUCCESS;
 }
 
@@ -91,7 +90,7 @@ void ConvertTmToTimeComp(const struct tm timeInfo, int32_t millis, TimeComponent
 
 TimestampMs GetCurrentTimestampMs(void)
 {
-    DtInter_SetLastErr(ERR_COMM_SUCCESS);
+    SetLastError(ERR_COMM_SUCCESS);
 #ifdef _WIN32
     FILETIME ft;
     // 获取当前系统时间，以FILETIME格式存储（从Windows纪元1601-01-01 00:00:00开始的100纳秒间隔数）
@@ -148,18 +147,11 @@ TimeComponent TimeStampMs2Component(TimestampMs timestamp, TimeZone timeZone)
     }
 
     if (rst != ERR_COMM_SUCCESS) {
-        // DEBUG_LOG_ERR(
-        // "[FAILED] Get time info, zone: %s, message: %s.", GetTimeZoneString(timeZone), GetLastErrorString());
+        DEBUG_LOG_ERR("[FAILED] Get time info, zone: %s, message: %s.", GetTimeZoneString(timeZone), GetLastErrStr());
     } else {
         ConvertTmToTimeComp(timeInfo, millis, &timeComp);
-        DtInter_SetLastErr(ERR_COMM_SUCCESS);
-        // DEBUG_LOG_DBG(
-        //     "[SUCCESS] Get time info, zone: %s, message: %s.", GetTimeZoneString(timeZone), GetLastErrorString());
+        SetLastError(ERR_COMM_SUCCESS);
+        DEBUG_LOG_DBG("[SUCCESS] Get time info, zone: %s, message: %s.", GetTimeZoneString(timeZone), GetLastErrStr());
     }
     return timeComp;
-}
-
-ErrorCode DT_GetLastError(void)
-{
-    return DtInter_GetLastErr();
 }

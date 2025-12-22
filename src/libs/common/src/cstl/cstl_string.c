@@ -13,14 +13,7 @@
 #define CSTL_STRING_DEFAULT_SIZE (128)
 #define CSTL_STRING_INCREASE_SIZE (128)
 
-struct CStlString {
-    ErrorCode lastErrCode;
-    uint32_t length;
-    uint32_t capacity;
-    char *cstr;
-};
-
-static void StlString_AppendVa(CStlString *string, const char *format, va_list args)
+static void CStlString_AppendVa(CString *string, const char *format, va_list args)
 {
     string->lastErrCode = ERR_COMM_SUCCESS;
     va_list argsCpy;
@@ -38,6 +31,11 @@ static void StlString_AppendVa(CStlString *string, const char *format, va_list a
         goto FINISH;
     }
 
+    if (string->type == CSTR_TYPE_STATIC) {
+        string->lastErrCode = ERR_COMM_EXCEED_MAX_CAPACITY;
+        goto FINISH;
+    }
+
     if (newLength >= CSTL_STRING_MAX_CAPACITY) {
         string->lastErrCode = ERR_COMM_EXCEED_MAX_CAPACITY;
         goto FINISH;
@@ -45,7 +43,7 @@ static void StlString_AppendVa(CStlString *string, const char *format, va_list a
 
     string->cstr[string->length] = '\0';
     uint32_t newCapacity = COMM_MIN(newLength + CSTL_STRING_INCREASE_SIZE, CSTL_STRING_MAX_CAPACITY);
-    if (CStlString_Resize(string, newCapacity) == ERR_COMM_SUCCESS) {
+    if (CString_Resize(string, newCapacity) == ERR_COMM_SUCCESS) {
         if (format != NULL) {
             vsnprintf(string->cstr + string->length, string->capacity - string->length, format, argsCpy);
         }
@@ -58,53 +56,54 @@ FINISH:
     string->cstr[string->length] = '\0';
 }
 
-static CStlString *CStlString_NewBySizeVa(uint32_t size, const char *format, va_list args)
+static CString *CString_NewBySizeVa(uint32_t size, const char *format, va_list args)
 {
-    CStlString *string = malloc(sizeof(CStlString));
+    CString *string = malloc(sizeof(CString));
     if (string == NULL) {
         return NULL;
     }
+    string->type = CSTR_TYPE_DYNAMIC;
     string->length = 0;
     string->capacity = size;
     string->cstr = malloc(string->capacity);
 
-    StlString_AppendVa(string, format, args);
+    CStlString_AppendVa(string, format, args);
 
     return string;
 }
 
-CStlString *CStlString_New(const char *format, ...)
+CString *CString_New(const char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    CStlString *string = CStlString_NewBySizeVa(CSTL_STRING_DEFAULT_SIZE, format, args);
+    CString *string = CString_NewBySizeVa(CSTL_STRING_DEFAULT_SIZE, format, args);
     va_end(args);
     return string;
 }
 
-CStlString *CStlString_NewBySize(uint32_t size, const char *format, ...)
+CString *CString_NewBySize(uint32_t size, const char *format, ...)
 {
     va_list args;
     va_start(args, format);
     size = (size == 0 ? CSTL_STRING_DEFAULT_SIZE : size);
-    CStlString *string = CStlString_NewBySizeVa(size, format, args);
+    CString *string = CString_NewBySizeVa(size, format, args);
     va_end(args);
     return string;
 }
 
-ErrorCode CStlString_Append(CStlString *string, const char *format, ...)
+ErrorCode CString_Append(CString *string, const char *format, ...)
 {
     if (string == NULL) {
         return ERR_COMM_PARAM_NULL;
     }
     va_list args;
     va_start(args, format);
-    StlString_AppendVa(string, format, args);
+    CStlString_AppendVa(string, format, args);
     va_end(args);
     return string->lastErrCode;
 }
 
-const char *CStlString_CStr(const CStlString *string)
+const char *CString_CStr(const CString *string)
 {
     if (string == NULL) {
         return NULL;
@@ -112,7 +111,7 @@ const char *CStlString_CStr(const CStlString *string)
     return string->cstr;
 }
 
-uint32_t CStlString_Length(const CStlString *string)
+uint32_t CString_Length(const CString *string)
 {
     if (string == NULL) {
         return 0;
@@ -120,7 +119,7 @@ uint32_t CStlString_Length(const CStlString *string)
     return string->length;
 }
 
-uint32_t CStlString_Capacity(const CStlString *string)
+uint32_t CString_Capacity(const CString *string)
 {
     if (string == NULL) {
         return 0;
@@ -128,7 +127,7 @@ uint32_t CStlString_Capacity(const CStlString *string)
     return string->capacity;
 }
 
-void CStlString_Delete(CStlString *string)
+void CString_Delete(CString *string)
 {
     if (string == NULL) {
         return;
@@ -140,12 +139,12 @@ void CStlString_Delete(CStlString *string)
     free(string);
 }
 
-CStlString *CStlString_Copy(const CStlString *srcStr)
+CString *CString_Copy(const CString *srcStr)
 {
     if (srcStr == NULL) {
         return NULL;
     }
-    CStlString *string = malloc(sizeof(CStlString));
+    CString *string = malloc(sizeof(CString));
     if (string == NULL) {
         return NULL;
     }
@@ -161,7 +160,7 @@ CStlString *CStlString_Copy(const CStlString *srcStr)
     return string;
 }
 
-ErrorCode CStlString_Resize(CStlString *string, uint32_t newCapacity)
+ErrorCode CString_Resize(CString *string, uint32_t newCapacity)
 {
     if (string == NULL) {
         return ERR_COMM_PARAM_NULL;
@@ -188,7 +187,7 @@ ErrorCode CStlString_Resize(CStlString *string, uint32_t newCapacity)
     return string->lastErrCode;
 }
 
-ErrorCode CStlString_GetLastError(const CStlString *string)
+ErrorCode CString_GetLastError(const CString *string)
 {
     if (string == NULL) {
         return ERR_COMM_PARAM_NULL;

@@ -15,16 +15,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include "common/types/logging_types.h"
 
 typedef struct LoggingSinkBase LoggingSinkBase;
-
-typedef enum {
-    LOG_DEBUG = 0,
-    LOG_INFO,
-    LOG_WARNING,
-    LOG_ERROR,
-    LOG_FATAL
-} LogLevel;
 
 /**
  * @brief 日志打印接口
@@ -36,17 +29,24 @@ typedef enum {
  * @param format 日志格式
  * @param ...
  */
-void Logging_Log(const char *file, int line, const char *func, LogLevel level, const char *format, ...);
+void LoggingLog(const char *file, int line, const char *func, LogLevel level, const char *format, ...);
 
-void Logging_Init(void);
+void LoggingInit(void);
 
-void Logging_Close(void);
+void LoggingClose(void);
 
-void Logging_RegisterSink(LoggingSinkBase *sink);
+void LoggingRegisterSink(LoggingSinkBase *sink);
 
-void Logging_SetAllowedLevel(LogLevel level);
+void LoggingSetAllowedLevel(LogLevel level);
 
-#define LOG(level, fmt, ...) Logging_Log(__FILE__, __LINE__, __func__, level, fmt, __VA_ARGS__)
+#define LOG(level, fmt, ...) LoggingLog(__FILE__, __LINE__, __func__, level, fmt, __VA_ARGS__)
+
+typedef enum {
+    CONSOLE_TYPE_STDOUT = 0,
+    CONSOLE_TYPE_STDERR
+} ConsoleType;
+
+LoggingSinkBase *LoggingGetConsoleSink(ConsoleType consoleType);
 
 #ifdef __cplusplus
 }  // 结束 extern "C" 块

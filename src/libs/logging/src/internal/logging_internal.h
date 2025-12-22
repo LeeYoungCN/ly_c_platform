@@ -9,16 +9,19 @@
  *
  */
 
-#ifndef LOGGING_LOGGING_INTERNAL_H
-#define LOGGING_LOGGING_INTERNAL_H
+#ifndef LOGGING_INTERNAL_LOGGING_INTERNAL_H
+#define LOGGING_INTERNAL_LOGGING_INTERNAL_H
 
-#include "logging/logging.h"
+#include "common/types/logging_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define LOG_BUFFER_LEN (512)
+#include <stdint.h>
+
+#define LOG_BUFFER_LEN (128)
+#define LOG_MSG_LEN (256)
 
 typedef struct {
     const char *file;
@@ -27,18 +30,12 @@ typedef struct {
     int timeStamp;
     LogLevel level;
     char buffer[LOG_BUFFER_LEN];
-} LogRecord;
+} LogMsg;
 
-/**
- * @brief Get the Log Level Name object
- *
- * @param level 日志级别
- * @return const char* 日志级别字符串
- */
-const char *Logging_GetLogLevelName(LogLevel level);
+void LoggingFormatLogMsg(char *buffer, uint32_t size, LogMsg *logMsg);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // LOGGING_LOGGING_INTERNAL_H
+#endif  // LOGGING_INTERNAL_LOGGING_INTERNAL_H

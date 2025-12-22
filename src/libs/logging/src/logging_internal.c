@@ -10,22 +10,9 @@
  */
 
 #include "internal/logging_internal.h"
-#include "logging/logging.h"
 
-const char *Logging_GetLogLevelName(LogLevel level)
+
+void LoggingFormatLogMsg(char *buffer, uint32_t size, LogMsg *logMsg)
 {
-    switch (level) {
-        case LOG_DEBUG:
-            return "DBG";
-        case LOG_INFO:
-            return "INF";
-        case LOG_WARNING:
-            return "WARN";
-        case LOG_ERROR:
-            return "ERR";
-        case LOG_FATAL:
-            return "PANIC";
-        default:
-            return "Unkown";
-    }
+    
 }

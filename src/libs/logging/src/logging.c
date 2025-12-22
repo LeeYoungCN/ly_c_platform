@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "common/types/logging_types.h"
 #include "common/utils/file_system_utils.h"
 #include "internal/logging_internal.h"
 #include "internal/logging_sink_base.h"
@@ -14,42 +15,49 @@ LoggingSinkBase *g_sinkList[MAX_SINK_CNT] = {NULL};
 uint32_t g_sinkCnt = 0;
 LogLevel g_allowedLevel = LOG_ERROR;
 
-void Logging_SetAllowedLevel(LogLevel level)
+void LoggingSetAllowedLevel(LogLevel level)
 {
     g_allowedLevel = level;
 }
 
-void Logging_RegisterSink(LoggingSinkBase *sink)
+void LoggingRegisterSink(LoggingSinkBase *sink)
 {
     g_sinkList[g_sinkCnt++] = sink;
 }
 
-void Logging_Init(void)
+void LoggingInit(void)
 {
     for (uint32_t i = 0; i < g_sinkCnt; i++) {
         if (g_sinkList[i] != NULL && g_sinkList[i]->init) {
-            (*g_sinkList[i]->init)();
+            (*g_sinkList[i]->init)(g_sinkList[i]);
         }
     }
 }
 
-void Logging_Close(void)
+void LoggingClose(void)
 {
     for (uint32_t i = 0; i < g_sinkCnt; i++) {
         if (g_sinkList[i] != NULL && g_sinkList[i]->close) {
-            (*g_sinkList[i]->close)();
+            (*g_sinkList[i]->close)(g_sinkList[i]);
+        }
+    }
+
+    for (uint32_t i = 0; i < g_sinkCnt; i++) {
+        if (g_sinkList[i] != NULL && g_sinkList[i]->free) {
+            (*g_sinkList[i]->free)(g_sinkList[i]);
+            g_sinkList[i] = NULL;
         }
     }
 }
 
-void Logging_Log(const char *file, int line, const char *func, LogLevel level, const char *format, ...)
+void LoggingLog(const char *file, int line, const char *func, LogLevel level, const char *format, ...)
 {
     if (level < g_allowedLevel) {
         return;
     }
-
-    LogRecord record = {0};
-    record.file = file;
+    // TODO: Used mempool get LogRecord.
+    LogMsg record = {0};
+    record.file = Utils_GetFileName(file);
     record.line = line;
     record.func = func;
     record.level = level;
@@ -58,18 +66,9 @@ void Logging_Log(const char *file, int line, const char *func, LogLevel level, c
     vsnprintf(record.buffer, LOG_BUFFER_LEN, format, args);
     va_end(args);
 
-    if (g_sinkCnt == 0) {
-        printf("[%s:%d] [%s] %s\n",
-               Utils_GetFileName(record.file),
-               record.line,
-               Logging_GetLogLevelName(record.level),
-               record.buffer);
-        return;
-    }
-
     for (uint32_t i = 0; i < g_sinkCnt; i++) {
         if (g_sinkList[i] != NULL && g_sinkList[i]->log) {
-            (*g_sinkList[i]->log)(&record);
+            (*g_sinkList[i]->log)(g_sinkList[i], &record);
         }
     }
 }

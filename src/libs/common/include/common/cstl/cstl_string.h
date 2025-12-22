@@ -11,27 +11,38 @@ extern "C" {
 
 #define CSTL_STRING_MAX_CAPACITY (4096)
 
-typedef struct CStlString CStlString;
+typedef enum {
+    CSTR_TYPE_STATIC,
+    CSTR_TYPE_DYNAMIC
+} CStrType;
 
-CStlString *CStlString_New(const char *format, ...);
+typedef struct {
+    ErrorCode lastErrCode;
+    CStrType type;
+    uint32_t length;
+    uint32_t capacity;
+    char *cstr;
+} CString;
 
-CStlString *CStlString_NewBySize(uint32_t size, const char *format, ...);
+CString *CString_New(const char *format, ...);
 
-ErrorCode CStlString_Append(CStlString *string, const char *format, ...);
+CString *CString_NewBySize(uint32_t size, const char *format, ...);
 
-const char *CStlString_CStr(const CStlString *string);
+ErrorCode CString_Append(CString *string, const char *format, ...);
 
-uint32_t CStlString_Length(const CStlString *string);
+const char *CString_CStr(const CString *string);
 
-uint32_t CStlString_Capacity(const CStlString *string);
+uint32_t CString_Length(const CString *string);
 
-void CStlString_Delete(CStlString *string);
+uint32_t CString_Capacity(const CString *string);
 
-CStlString *CStlString_Copy(const CStlString *srcStr);
+void CString_Delete(CString *string);
 
-ErrorCode CStlString_Resize(CStlString *string, uint32_t newCapacity);
+CString *CString_Copy(const CString *srcStr);
 
-ErrorCode CStlString_GetLastError(const CStlString *string);
+ErrorCode CString_Resize(CString *string, uint32_t newCapacity);
+
+ErrorCode CString_GetLastError(const CString *string);
 
 #ifdef __cplusplus
 }

@@ -1,14 +1,16 @@
 #ifndef COMMON_UTILS_DATE_TIME_UTILS_H
 #define COMMON_UTILS_DATE_TIME_UTILS_H
 
-#include "common/types/error_code_types.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include <stddef.h>
 
+#include "common/cstl/cstl_string.h"
 #include "common/types/date_time_types.h"
+#include "common/types/error_code_types.h"
+
 /**
  * @brief 获取当前系统时间的毫秒级时间戳
  * @details 以Unix纪元（1970-01-01 00:00:00 UTC）为基准，返回当前时间的毫秒数
@@ -81,6 +83,7 @@ const char* GetWeekdayFullName(uint32_t weekday);
  */
 const char* GetWeekdayAbbrName(uint32_t weekday);
 
+size_t FormatTimeStringByComp(CString* string, const TimeComponent* timeComp, const char* format);
 
 ErrorCode DT_GetLastError(void);
 

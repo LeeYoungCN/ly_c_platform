@@ -5,10 +5,6 @@
 extern "C" {
 #endif
 
-typedef enum {
-    CONSOLE_STDOUT,
-    CONSOLE_STDERR
-} LogConsoleType;
 
 
 #ifdef __cplusplus
